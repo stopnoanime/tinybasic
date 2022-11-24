@@ -152,6 +152,7 @@
 #undef ESP01BOARD
 #undef RP2040BOARD
 #undef RP2040BOARD2
+#define RP2040USBBOARD
 #undef ESP32BOARD
 #undef MKR1010BOARD
 
@@ -455,6 +456,23 @@ const char zx81pins[] = {7, 8, 9, 10, 11, 12, A0, A1, 2, 3, 4, 5, 6 };
 #define ILI_DC  13
 #endif
 
+#if defined(RP2040USBBOARD)
+#undef USESPICOSERIAL
+#define  ARDUINOEEPROM
+#undef ARDUINOPRT
+#undef ARDUINOSD
+#undef ARDUINOWIRE
+#undef ARDUINORTC 
+#undef ARDUINOPS2
+#undef ARDUINOMQTT
+
+#define DISPLAYCANSCROLL
+#define ARDUINOST7789
+#undef RP2040LITTLEFS
+#define PICOUSBKBD
+#define STANDALONE
+
+#endif
 
 /* an ESP32 board with an ILI9488 display, 
   some SD problems here with some hardware */
@@ -563,7 +581,7 @@ const mem_t bsystype = SYSTYPE_UNKNOWN;
 #endif
 
 /* the NOKIA and ILI9488 display needs SPI */
-#if defined(ARDUINONOKIA51) || defined(ARDUINOILI9488)
+#if defined(ARDUINONOKIA51) || defined(ARDUINOILI9488) || defined(ARDUINOST7789)
 #define ARDUINOSPI
 #endif
 
@@ -583,7 +601,7 @@ const mem_t bsystype = SYSTYPE_UNKNOWN;
  * language setting 
  * this is odd and can be removed later on
  */
-#if !defined(ARDUINOTFT) && !defined(ARDUINOVGA) && !defined(ARDUINOILI9488) && !defined(ARDUINONOKIA51) && !defined(ARDUINOSSD1306) && !defined(ARDUINOMCUFRIEND) && !defined(ARDUINOGRAPHDUMMY)
+#if !defined(ARDUINOTFT) && !defined(ARDUINOVGA) && !defined(ARDUINOILI9488) && !defined(ARDUINONOKIA51) && !defined(ARDUINOSSD1306) && !defined(ARDUINOMCUFRIEND) && !defined(ARDUINOGRAPHDUMMY) && !defined(ARDUINOST7789)
 #undef HASGRAPH
 #endif
 
@@ -604,6 +622,13 @@ const mem_t bsystype = SYSTYPE_UNKNOWN;
  */
 #ifdef ARDUINOUSBKBD
 #include <KeyboardController.h>
+#endif
+
+
+#ifdef PICOUSBKBD
+#include "pio_usb.h"
+#define HOST_PIN_DP   2   // Pin used as D+ for host, D- = D+ + 1
+#include "Adafruit_TinyUSB.h"
 #endif
 
 /*
@@ -682,6 +707,12 @@ const mem_t bsystype = SYSTYPE_UNKNOWN;
 #ifdef ARDUINOILI9488
 #include <Adafruit_GFX.h>
 #include <ILI9488.h>
+#endif
+
+
+#ifdef ARDUINOST7789
+#include <Adafruit_GFX.h>
+#include <Adafruit_ST7789.h> // Hardware-specific library for ST7789
 #endif
 
 /*
@@ -1226,6 +1257,46 @@ void circle(int x0, int y0, int r) { tft.drawCircle(x0, y0, r, dspfgcolor); }
 void fcircle(int x0, int y0, int r) { tft.fillCircle(x0, y0, r, dspfgcolor); }
 #endif
 
+#ifdef ARDUINOST7789
+#define DISPLAYDRIVER
+  #define TFT_CS        20
+  #define TFT_RST        21 // Or set to -1 and connect to Arduino RESET pin
+  #define TFT_DC         22
+Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
+/* ILI in landscape */
+const int dsp_rows=12;
+const int dsp_columns=20;
+char dspfontsize = 16;
+uint16_t dspfgcolor = 0x2601;
+uint16_t dspbgcolor =  0x0000;
+void dspbegin() { 
+  tft.init(240, 320);
+  tft.setRotation(1);
+  tft.setTextColor(dspfgcolor);
+  tft.setTextSize(2);
+  tft.fillScreen(dspbgcolor); 
+  tft.invertDisplay(0);
+
+  dspsetscrollmode(1, 4);
+ }
+void dspprintchar(char c, short col, short row) { tft.drawChar(col*dspfontsize, row*dspfontsize, c, dspfgcolor, dspbgcolor, 2); }
+void dspclear() { tft.fillScreen(dspbgcolor); }
+void dspupdate() {}
+void rgbcolor(int r, int g, int b) { dspfgcolor=tft.color565(r, g, b);}
+void vgacolor(short c) {  
+  short base=128;
+  if (c==8) { rgbcolor(64, 64, 64); return; }
+  if (c>8) base=255;
+  rgbcolor(base*(c&1), base*((c&2)/2), base*((c&4)/4)); 
+}
+void plot(int x, int y) { tft.drawPixel(x, y, dspfgcolor); }
+void line(int x0, int y0, int x1, int y1)   { tft.drawLine(x0, y0, x1, y1, dspfgcolor); }
+void rect(int x0, int y0, int x1, int y1)   { tft.drawRect(x0, x0, x1, y1, dspfgcolor);}
+void frect(int x0, int y0, int x1, int y1)  { tft.fillRect(x0, x0, x1, y1, dspfgcolor); }
+void circle(int x0, int y0, int r) { tft.drawCircle(x0, y0, r, dspfgcolor); }
+void fcircle(int x0, int y0, int r) { tft.fillCircle(x0, y0, r, dspfgcolor); }
+#endif
+
 /* 
  * A MCUFRIEND parallel port display for the various tft shields 
  * This implementation is mainly for Arduino MEGA
@@ -1509,6 +1580,13 @@ PS2Keyboard keyboard;
 USBHost usb;
 KeyboardController keyboard(usb);
 char usbkey=0;
+#else
+#if defined(PICOUSBKBD)
+#define HASKEYBOARD
+#define USBKEYBOARD
+volatile char usbkey=0;
+Adafruit_USBH_Host USBHost;
+tusb_desc_device_t desc_device;
 #else 
 #if defined(ARDUINOZX81KBD)
 #define HASKEYBOARD
@@ -1517,6 +1595,77 @@ ZX81Keyboard keyboard;
 #endif
 #endif
 #endif
+#endif
+#endif
+
+#if defined(PICOUSBKBD)
+// core1's setup
+void setup1() {
+  pio_usb_configuration_t pio_cfg = PIO_USB_DEFAULT_CONFIG;
+  pio_cfg.pin_dp = HOST_PIN_DP;
+  USBHost.configure_pio_usb(1, &pio_cfg);
+  USBHost.begin(1);
+}
+
+// core1's loop
+void loop1() {
+  USBHost.task();
+}
+
+void tuh_hid_mount_cb(uint8_t dev_addr, uint8_t instance, uint8_t const *desc_report, uint16_t desc_len) {
+  (void)desc_report;
+  (void)desc_len;
+  uint16_t vid, pid;
+  tuh_vid_pid_get(dev_addr, &vid, &pid);
+  tuh_hid_receive_report(dev_addr, instance);
+}
+
+static inline bool find_key_in_report(hid_keyboard_report_t const *report, uint8_t keycode) {
+  for(uint8_t i=0; i<6; i++)if (report->keycode[i] == keycode)  return true;
+
+  return false;
+}
+
+static uint8_t const keycode2ascii[128][2] =  { HID_KEYCODE_TO_ASCII };
+static void process_kbd_report(hid_keyboard_report_t const *report) {
+  static hid_keyboard_report_t prev_report = { 0, 0, {0} }; // previous report to check key released
+
+  if ( report->keycode[0] ){
+    if ( !find_key_in_report(&prev_report, report->keycode[0]) ) // not existed in previous report means the current key is pressed
+    {
+      switch (report->keycode[0]) {
+        case 40:
+          usbkey=10;
+          break;
+        case 42:
+        case 76:
+          usbkey=127;
+          break;
+        case 41:
+          usbkey=27;
+          break;
+        default:
+          bool const is_shift = report->modifier & (KEYBOARD_MODIFIER_LEFTSHIFT | KEYBOARD_MODIFIER_RIGHTSHIFT);
+          uint8_t ch = keycode2ascii[report->keycode[0]][is_shift ? 1 : 0];
+          usbkey=ch; 
+      }
+    }
+  }
+
+  prev_report = *report;
+}
+
+void tuh_hid_report_received_cb(uint8_t dev_addr, uint8_t instance, uint8_t const *report, uint16_t len) {
+  Serial.write('\n');
+  for (uint16_t i = 0; i < len; i++) {
+    Serial.printf("0x%02X ", report[i]);
+  }
+  Serial.println();
+  Serial.write('\n');
+
+  process_kbd_report( (hid_keyboard_report_t const*) report );
+  tuh_hid_receive_report(dev_addr, instance);
+}
 #endif
 
 /*
