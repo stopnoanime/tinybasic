@@ -627,7 +627,7 @@ const mem_t bsystype = SYSTYPE_UNKNOWN;
 
 #ifdef PICOUSBKBD
 #include "pio_usb.h"
-#define HOST_PIN_DP   2   // Pin used as D+ for host, D- = D+ + 1
+#define HOST_PIN_DP   16   // Pin used as D+ for host, D- = D+ + 1
 #include "Adafruit_TinyUSB.h"
 #endif
 
@@ -1264,7 +1264,7 @@ void fcircle(int x0, int y0, int r) { tft.fillCircle(x0, y0, r, dspfgcolor); }
   #define TFT_DC         22
 Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 /* ILI in landscape */
-const int dsp_rows=12;
+const int dsp_rows=15;
 const int dsp_columns=20;
 char dspfontsize = 16;
 uint16_t dspfgcolor = 0x2601;
@@ -1601,6 +1601,8 @@ ZX81Keyboard keyboard;
 #if defined(PICOUSBKBD)
 // core1's setup
 void setup1() {
+  delay(2000); //Without this delay, keyboard sometimes does not initialize
+
   pio_usb_configuration_t pio_cfg = PIO_USB_DEFAULT_CONFIG;
   pio_cfg.pin_dp = HOST_PIN_DP;
   USBHost.configure_pio_usb(1, &pio_cfg);
@@ -1656,12 +1658,11 @@ static void process_kbd_report(hid_keyboard_report_t const *report) {
 }
 
 void tuh_hid_report_received_cb(uint8_t dev_addr, uint8_t instance, uint8_t const *report, uint16_t len) {
-  Serial.write('\n');
-  for (uint16_t i = 0; i < len; i++) {
-    Serial.printf("0x%02X ", report[i]);
-  }
-  Serial.println();
-  Serial.write('\n');
+//   Serial.printf("HIDreport : ");
+//   for (uint16_t i = 0; i < len; i++) {
+//     Serial.printf("0x%02X ", report[i]);
+//   }
+//   Serial.println();
 
   process_kbd_report( (hid_keyboard_report_t const*) report );
   tuh_hid_receive_report(dev_addr, instance);
