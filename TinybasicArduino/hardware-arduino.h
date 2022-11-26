@@ -627,7 +627,7 @@ const mem_t bsystype = SYSTYPE_UNKNOWN;
 
 #ifdef PICOUSBKBD
 #include "pio_usb.h"
-#define HOST_PIN_DP   16   // Pin used as D+ for host, D- = D+ + 1
+#define HOST_PIN_DP   26   // Pin used as D+ for host, D- = D+ + 1
 #include "Adafruit_TinyUSB.h"
 #endif
 
@@ -1601,7 +1601,8 @@ ZX81Keyboard keyboard;
 #if defined(PICOUSBKBD)
 // core1's setup
 void setup1() {
-  delay(2000); //Without this delay, keyboard sometimes does not initialize
+  //DEBUG
+  //pinMode(LED_BUILTIN, OUTPUT);
 
   pio_usb_configuration_t pio_cfg = PIO_USB_DEFAULT_CONFIG;
   pio_cfg.pin_dp = HOST_PIN_DP;
@@ -1620,6 +1621,12 @@ void tuh_hid_mount_cb(uint8_t dev_addr, uint8_t instance, uint8_t const *desc_re
   uint16_t vid, pid;
   tuh_vid_pid_get(dev_addr, &vid, &pid);
   tuh_hid_receive_report(dev_addr, instance);
+
+  //DEBUG
+  //digitalWrite(LED_BUILTIN, HIGH);
+  //delay(400);
+  //digitalWrite(LED_BUILTIN, LOW);
+  //delay(400); 
 }
 
 static inline bool find_key_in_report(hid_keyboard_report_t const *report, uint8_t keycode) {
@@ -1658,11 +1665,17 @@ static void process_kbd_report(hid_keyboard_report_t const *report) {
 }
 
 void tuh_hid_report_received_cb(uint8_t dev_addr, uint8_t instance, uint8_t const *report, uint16_t len) {
-//   Serial.printf("HIDreport : ");
-//   for (uint16_t i = 0; i < len; i++) {
-//     Serial.printf("0x%02X ", report[i]);
-//   }
-//   Serial.println();
+  //   Serial.printf("HIDreport : ");
+  //   for (uint16_t i = 0; i < len; i++) {
+  //     Serial.printf("0x%02X ", report[i]);
+  //   }
+  //   Serial.println();
+
+  //DEBUG
+  //digitalWrite(LED_BUILTIN, HIGH);
+  //delay(100);
+  //digitalWrite(LED_BUILTIN, LOW);
+  //delay(100); 
 
   process_kbd_report( (hid_keyboard_report_t const*) report );
   tuh_hid_receive_report(dev_addr, instance);
