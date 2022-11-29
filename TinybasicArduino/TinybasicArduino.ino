@@ -3592,11 +3592,12 @@ void factor(){
 			break;
 #endif
 		case TAZERO:
-#if defined(ARDUINO) && defined(A0)
-			push(A0);
-#else 
-			push(0);
-#endif			
+// #if defined(ARDUINO) && defined(A0)
+// 			push(A0);
+// #else 
+// 			push(0);
+push(A0);
+//#endif			
 			break;
 		case TLED:
 #ifdef LED_BUILTIN

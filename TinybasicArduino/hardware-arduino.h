@@ -627,7 +627,7 @@ const mem_t bsystype = SYSTYPE_UNKNOWN;
 
 #ifdef PICOUSBKBD
 #include "pio_usb.h"
-#define HOST_PIN_DP   26   // Pin used as D+ for host, D- = D+ + 1
+#define HOST_PIN_DP   8   // Pin used as D+ for host, D- = D+ + 1
 #include "Adafruit_TinyUSB.h"
 #endif
 
