@@ -458,14 +458,12 @@ const char zx81pins[] = {7, 8, 9, 10, 11, 12, A0, A1, 2, 3, 4, 5, 6 };
 
 #if defined(RP2040USBBOARD)
 #undef USESPICOSERIAL
-#define  ARDUINOEEPROM
 #undef ARDUINOPRT
-#undef ARDUINOSD
+#define ARDUINOSD
 #undef ARDUINOWIRE
 #undef ARDUINORTC 
 #undef ARDUINOPS2
 #undef ARDUINOMQTT
-
 #define DISPLAYCANSCROLL
 #define ARDUINOST7789
 #undef RP2040LITTLEFS
@@ -2957,7 +2955,7 @@ void fsbegin(char v) {
 #ifndef SDPIN
 #define SDPIN
 #endif
-  if (SD.begin(SDPIN) && v) outsc("SDcard ok \n"); else outsc("SDcard not ok \n");	
+  if (SD.begin(PIN_SPI1_SS, SPI1) && v) outsc("SDcard ok \n"); else outsc("SDcard not ok \n");	
 #endif
 #if defined(ESPSPIFFS) && defined(ARDUINO_ARCH_ESP8266) 
  	if (SPIFFS.begin() && v) {
@@ -3003,7 +3001,7 @@ int fsstat(char c) {
  */
 void filewrite(char c) {
 #if defined(ARDUINOSD) || defined(ESPSPIFFS)
-	if (ofile) ofile.write(c); else ert=1;
+ if (ofile) ofile.write((uint8_t)c); else ert=1;
 #endif
 #if defined(RP2040LITTLEFS)
 	if (ofile) fputc(c, ofile); else ert=1;
