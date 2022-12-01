@@ -1265,11 +1265,12 @@ Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 const int dsp_rows=15;
 const int dsp_columns=20;
 char dspfontsize = 16;
-uint16_t dspfgcolor = 0x2601;
+uint16_t dspfgcolor = 0xFFFF;
 uint16_t dspbgcolor =  0x0000;
 void dspbegin() { 
   tft.init(240, 320);
   tft.setRotation(1);
+  vgacolor(14);
   tft.setTextColor(dspfgcolor);
   tft.setTextSize(2);
   tft.fillScreen(dspbgcolor); 
@@ -2094,7 +2095,7 @@ void dspwrite(char c){
     	dspbufferclear();
     	dspclear();
 #ifdef HASGRAPH
-      vgacolor(15);
+      vgacolor(14);
 #endif
     	return;
     case 13: // classical carriage return 
