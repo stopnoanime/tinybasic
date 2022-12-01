@@ -224,6 +224,7 @@ typedef unsigned char uint8_t;
 #define TSENSOR	-26
 #define TWIRE	-25
 #define TSLEEP	-24
+#define TBAT -23
 /* constants used for some obscure purposes */
 #define TBUFFER -2
 /* UNKNOWN is not used in the current code, the 
@@ -411,6 +412,8 @@ const char swire[]		PROGMEM  = "WIRE";
 const char ssleep[]		PROGMEM  = "SLEEP";
 #endif
 
+const char sbat[]		PROGMEM  = "BAT";
+
 /* zero terminated keyword storage */
 const char* const keyword[] PROGMEM = {
 	sge, sle, sne, sprint, slet, sinput, 
@@ -466,6 +469,7 @@ const char* const keyword[] PROGMEM = {
 	sassign, savail, sstr, sinstr, sval, 
 	snetstat, ssensor, swire, ssleep, 
 #endif
+	sbat,
 	0
 };
 
@@ -522,6 +526,7 @@ const signed char tokens[] PROGMEM = {
 	TASSIGN, TAVAIL, TSTR, TINSTR, TVAL, TNETSTAT,
 	TSENSOR, TWIRE, TSLEEP,
 #endif
+	TBAT,
 	0
 };
 

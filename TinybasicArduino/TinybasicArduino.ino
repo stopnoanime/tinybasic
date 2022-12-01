@@ -5857,6 +5857,16 @@ void xassign() {
 
 #endif
 
+void xbat() {
+  float v = analogRead(A2);
+  v = v / 1024 * 3.3 * 2;
+
+  outsc("Battery voltage: ");
+  outnumber( (int)(v * 100)/100.0);
+  outsc(" V \n");
+
+  nexttoken(); 
+}
 
 /*
  *	BASIC DOS - disk access programs, to control mass storage from BASIC
@@ -6855,6 +6865,9 @@ void statement(){
 				xsleep();
 				break;	
 #endif
+			case TBAT:
+				xbat();
+			break;
 /* and all the rest */
 /*			case UNKNOWN:
 				error(EUNKNOWN);
