@@ -1262,8 +1262,11 @@ void fcircle(int x0, int y0, int r) { tft.fillCircle(x0, y0, r, dspfgcolor); }
   #define TFT_DC         22
 Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 /* ILI in landscape */
-const int dsp_rows=15;
-const int dsp_columns=20;
+int dsp_rows=15;
+int dsp_columns=20;
+const int dsp_rows_buff=30;
+const int dsp_columns_buff=40;
+char dspfontscale = 2;
 char dspfontsize = 16;
 uint16_t dspfgcolor = 0xFFFF;
 uint16_t dspbgcolor =  0x0000;
@@ -1272,13 +1275,13 @@ void dspbegin() {
   tft.setRotation(1);
   vgacolor(14);
   tft.setTextColor(dspfgcolor);
-  tft.setTextSize(2);
+  tft.setTextSize(dspfontscale);
   tft.fillScreen(dspbgcolor); 
   tft.invertDisplay(0);
 
   dspsetscrollmode(1, 4);
  }
-void dspprintchar(char c, short col, short row) { tft.drawChar(col*dspfontsize, row*dspfontsize, c, dspfgcolor, dspbgcolor, 2); }
+void dspprintchar(char c, short col, short row) { tft.drawChar(col*dspfontsize, row*dspfontsize, c, dspfgcolor, dspbgcolor, dspfontscale); }
 void dspclear() { tft.fillScreen(dspbgcolor); }
 void dspupdate() {}
 void rgbcolor(int r, int g, int b) { dspfgcolor=tft.color565(r, g, b);}
@@ -2025,7 +2028,7 @@ void dspvt52(char* c){
 
 /* scrollable displays need a character buffer */
 #ifdef DISPLAYCANSCROLL
-char dspbuffer[dsp_rows][dsp_columns];
+char dspbuffer[dsp_rows_buff][dsp_columns_buff];
 char dspscrollmode = 0;
 short dsp_scroll_rows = 1; 
 

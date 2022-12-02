@@ -5868,6 +5868,38 @@ void xbat() {
   nexttoken(); 
 }
 
+void xfontp() {
+	if(dspfontscale<2) {
+		dspfontscale++;
+		dspfontsize*=2;
+		dsp_rows/=2;
+		dsp_columns/=2;
+
+		tft.setTextSize(dspfontscale);
+ 		outch(12);
+	} else {
+  		outsc("Can't increase font size anymore.\n");
+	}
+	
+  	nexttoken(); 
+}
+
+void xfontm() {
+	if(dspfontscale>1) {
+		dspfontscale--;
+		dspfontsize/=2;
+		dsp_rows*=2;
+		dsp_columns*=2;
+
+		tft.setTextSize(dspfontscale);
+ 		outch(12);
+	} else {
+  		outsc("Can't decrease font size anymore.\n");
+	}
+	
+  	nexttoken(); 
+}
+
 /*
  *	BASIC DOS - disk access programs, to control mass storage from BASIC
  */
@@ -6867,6 +6899,12 @@ void statement(){
 #endif
 			case TBAT:
 				xbat();
+			break;
+			case TFONTP:
+				xfontp();
+			break;
+			case TFONTM:
+				xfontm();
 			break;
 /* and all the rest */
 /*			case UNKNOWN:
